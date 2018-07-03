@@ -168,10 +168,15 @@ def train_test_split_third(path, frac=0.8, random_state=1, implicit=False):
 
 	if not implicit: 
 		# 显式反馈，不需要额外构建负样本
-		train_data = coo_matrix((ratings[train_idx], (rows[train_idx], cols[train_idx])), shape=(n,k))
-		test_data = coo_matrix((ratings[test_idx], (rows[test_idx], cols[test_idx])), shape=(n,k))
 
-		return train_data.todok(), test_data.todok()
+		# 原始样本中 训练集 测试集的正样本ID
+		train_idx = df.sample(frac=frac,random_state=random_state).index.values
+		test_idx = test_idx = np.array(list(set(range(len(ratings))) - set(train_idx)))
+
+		train_data = coo_matrix((ratings[train_idx], (users[train_idx], movies[train_idx])), shape=(n,k))
+		test_data = coo_matrix((ratings[test_idx], (users[test_idx], movies[test_idx])), shape=(n,k))
+
+		return train_data.todok(), test_data.todok(), ''
 
 	else:
 		# 隐式反馈，需要构建额外负样本
